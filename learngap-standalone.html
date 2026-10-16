@@ -1,0 +1,535 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LearnGap</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Sans+3:wght@400;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one narrow reading column. Hero names the problem, four tabs hold the prototype (learner), the teacher view, the architecture and the responsible-AI review. */
+:root {
+  --bg: #F2F5F6;
+  --surface: #FFFFFF;
+  --fg: #13242A;
+  --muted: #53686F;
+  --line: #D3DDE0;
+  --accent: #0B6E78;
+  --accent-fg: #FFFFFF;
+  --accent-soft: #DCEEF0;
+  --mark: #F2C94C;
+  --bad-bg: #F8DDD6; --bad-fg: #7A2412;
+  --mid-bg: #F7E7BD; --mid-fg: #6B4A00;
+  --ok-bg: #CDEBDD;  --ok-fg: #0F5A3F;
+  --font-display: 'Bricolage Grotesque', 'Segoe UI', system-ui, sans-serif;
+  --font-body: 'Source Sans 3', 'Segoe UI', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0F1A1E; --surface: #16252A; --fg: #E6EEF0; --muted: #98ADB3; --line: #2A3E44;
+    --accent: #4FC1CC; --accent-fg: #06252A; --accent-soft: #18383D; --mark: #E0B93C;
+    --bad-bg: #4A2219; --bad-fg: #F4B8A8;
+    --mid-bg: #4A3A12; --mid-fg: #F1D58A;
+    --ok-bg: #16402F;  --ok-fg: #9FDDBF;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0F1A1E; --surface: #16252A; --fg: #E6EEF0; --muted: #98ADB3; --line: #2A3E44;
+  --accent: #4FC1CC; --accent-fg: #06252A; --accent-soft: #18383D; --mark: #E0B93C;
+  --bad-bg: #4A2219; --bad-fg: #F4B8A8;
+  --mid-bg: #4A3A12; --mid-fg: #F1D58A;
+  --ok-bg: #16402F;  --ok-fg: #9FDDBF;
+  color-scheme: dark;
+}
+*, *::before, *::after { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg);
+  font-family: var(--font-body); font-size: 17px; line-height: 1.55;
+  padding-inline: clamp(16px, 4vw, 40px); padding-block: 28px 56px;
+}
+.wrap { max-width: 980px; margin-inline: auto; display: flex; flex-direction: column; gap: 28px; }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; line-height: 1.1; margin: 0; }
+h1 { font-size: clamp(2.4rem, 7vw, 4rem); font-weight: 700; letter-spacing: -0.02em; }
+h2 { font-size: 1.6rem; font-weight: 700; letter-spacing: -0.01em; }
+h3 { font-size: 1.1rem; font-weight: 700; }
+p { margin: 0; }
+.mono, .eyebrow { font-family: var(--font-mono); }
+.eyebrow { font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.muted { color: var(--muted); }
+.small { font-size: 0.92rem; }
+
+.hero { display: flex; flex-direction: column; gap: 14px; padding-block: 8px 4px; }
+.hero .gap-word { background: linear-gradient(transparent 62%, var(--mark) 62%, var(--mark) 92%, transparent 92%); padding-inline: 2px; }
+.hero p.lede { font-size: 1.2rem; max-width: 40rem; }
+
+.tabs { display: flex; flex-wrap: wrap; gap: 6px; border-bottom: 1px solid var(--line); }
+.tab {
+  font: inherit; font-weight: 600; color: var(--muted); background: none; border: 0;
+  padding: 10px 14px; border-bottom: 3px solid transparent; margin-bottom: -1px; cursor: pointer;
+}
+.tab:hover { color: var(--fg); }
+.tab[aria-selected="true"] { color: var(--fg); border-bottom-color: var(--accent); }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+
+.panel { display: flex; flex-direction: column; gap: 22px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 22px; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
+.grid > * { min-width: 0; }
+
+button.btn {
+  font: inherit; font-weight: 600; cursor: pointer; border-radius: 8px; padding: 10px 18px;
+  border: 1px solid var(--accent); background: var(--accent); color: var(--accent-fg);
+}
+button.btn:hover { filter: brightness(1.08); }
+button.btn.ghost { background: transparent; color: var(--accent); }
+button.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.qtext { font-family: var(--font-display); font-size: 1.7rem; font-weight: 500; line-height: 1.2; }
+.options { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); }
+.opt {
+  font: inherit; font-size: 1.15rem; text-align: left; cursor: pointer; display: flex; gap: 12px; align-items: baseline;
+  background: var(--surface); color: var(--fg); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px;
+}
+.opt:hover:not(:disabled) { border-color: var(--accent); }
+.opt .letter { font-family: var(--font-mono); font-size: 0.85rem; color: var(--muted); }
+.opt.right { background: var(--ok-bg); color: var(--ok-fg); border-color: var(--ok-fg); }
+.opt.wrong { background: var(--bad-bg); color: var(--bad-fg); border-color: var(--bad-fg); }
+.opt:disabled { cursor: default; }
+.progress { height: 6px; background: var(--line); border-radius: 3px; overflow: hidden; }
+.progress > span { display: block; height: 100%; background: var(--accent); }
+.feedback { background: var(--accent-soft); border-radius: 8px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; }
+
+.pill { display: inline-block; font-family: var(--font-mono); font-size: 0.74rem; padding: 2px 8px; border-radius: 99px; white-space: nowrap; }
+.lv-bad { background: var(--bad-bg); color: var(--bad-fg); }
+.lv-mid { background: var(--mid-bg); color: var(--mid-fg); }
+.lv-ok  { background: var(--ok-bg);  color: var(--ok-fg); }
+
+.mrow { display: grid; grid-template-columns: minmax(130px, 190px) 1fr auto; gap: 12px; align-items: center; }
+.mrow .track { height: 12px; border-radius: 6px; background: var(--line); overflow: hidden; }
+.mrow .track > span { display: block; height: 100%; border-radius: 6px; }
+.fill-bad { background: var(--bad-fg); } .fill-mid { background: var(--mid-fg); } .fill-ok { background: var(--ok-fg); }
+.mrow .val { font-family: var(--font-mono); font-size: 0.85rem; display: flex; gap: 8px; align-items: center; justify-content: flex-end; }
+@media (max-width: 560px) { .mrow { grid-template-columns: 1fr auto; } .mrow .track { grid-column: 1 / -1; order: 3; } }
+
+.plan { display: flex; flex-direction: column; gap: 14px; counter-reset: p; padding: 0; margin: 0; list-style: none; }
+.plan > li { border-top: 1px solid var(--line); padding-top: 14px; display: flex; flex-direction: column; gap: 6px; }
+.plan ol { margin: 4px 0 0; padding-left: 1.2rem; display: flex; flex-direction: column; gap: 4px; }
+.why { font-size: 0.92rem; color: var(--muted); }
+.why b { color: var(--fg); font-weight: 600; }
+
+.scroll { overflow-x: auto; max-width: 100%; }
+table { border-collapse: collapse; width: 100%; font-size: 0.95rem; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); font-weight: 500; white-space: nowrap; }
+table.heat td.cell { text-align: center; font-family: var(--font-mono); font-variant-numeric: tabular-nums; min-width: 84px; }
+table.heat button.who { font: inherit; font-family: var(--font-mono); font-size: 0.85rem; background: none; border: 0; color: var(--accent); cursor: pointer; padding: 0; text-decoration: underline; }
+table.heat tr.sel th, table.heat tr.sel td.stat { background: var(--accent-soft); }
+table.wide { min-width: 640px; }
+
+.rbar { display: grid; grid-template-columns: minmax(130px, 200px) 1fr auto; gap: 12px; align-items: center; }
+.rbar .track { height: 12px; background: var(--line); border-radius: 6px; overflow: hidden; }
+.rbar .track > span { display: block; height: 100%; background: var(--accent); border-radius: 6px; }
+@media (max-width: 560px) { .rbar { grid-template-columns: 1fr auto; } .rbar .track { grid-column: 1 / -1; order: 3; } }
+
+.stages { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); }
+.stage { border: 1px solid var(--line); border-radius: 10px; background: var(--surface); padding: 16px; display: flex; flex-direction: column; gap: 6px; position: relative; min-width: 0; }
+.stage .eyebrow { color: var(--accent); }
+.stage.human { border-color: var(--accent); background: var(--accent-soft); }
+
+textarea { font: inherit; width: 100%; min-height: 70px; border: 1px solid var(--line); border-radius: 8px; padding: 10px; background: var(--surface); color: var(--fg); resize: vertical; }
+.note-box { border-left: 3px solid var(--mark); padding-left: 12px; }
+footer { color: var(--muted); font-size: 0.9rem; }
+@media (prefers-reduced-motion: no-preference) { .progress > span, .track > span { transition: width 0.35s ease; } }
+</style>
+</head>
+<body>
+
+
+<div class="wrap">
+  <header class="hero">
+    <span class="eyebrow">AI solution prototype · Education · Grade 8 mathematics</span>
+    <h1>Learn<span class="gap-word">Gap</span></h1>
+    <p class="lede">A learner takes a ten-question check. LearnGap finds the topics they are missing and drafts a short study plan. The teacher reviews it before it counts.</p>
+  </header>
+
+  <nav class="tabs" role="tablist" aria-label="Sections">
+    <button class="tab" role="tab" id="t-learner" aria-selected="true" data-tab="learner">Learner</button>
+    <button class="tab" role="tab" id="t-teacher" aria-selected="false" data-tab="teacher">Teacher</button>
+    <button class="tab" role="tab" id="t-arch" aria-selected="false" data-tab="arch">How it works</button>
+    <button class="tab" role="tab" id="t-rai" aria-selected="false" data-tab="rai">Responsible AI</button>
+  </nav>
+
+  <section class="panel" id="p-learner" role="tabpanel" aria-labelledby="t-learner"><div id="learner-root"></div></section>
+
+  <section class="panel" id="p-teacher" role="tabpanel" aria-labelledby="t-teacher" hidden>
+    <div class="card">
+      <span class="eyebrow">Example class data · 12 generated learners</span>
+      <h2>Who needs what, this week</h2>
+      <p class="muted small">These learners are generated for the demo and are not real children. Finish the learner check and you appear in the first row.</p>
+      <div id="reteach" style="display:flex;flex-direction:column;gap:12px"></div>
+    </div>
+    <div class="card">
+      <h3>Mastery by learner</h3>
+      <p class="muted small">Scores are percentages. Select a learner code to review and approve their plan.</p>
+      <div class="scroll"><table class="heat" id="heat"></table></div>
+    </div>
+    <div class="card" id="detail"></div>
+  </section>
+
+  <section class="panel" id="p-arch" role="tabpanel" aria-labelledby="t-arch" hidden>
+    <div class="card">
+      <span class="eyebrow">Architecture</span>
+      <h2>Five stages, one human checkpoint</h2>
+      <div class="stages">
+        <div class="stage"><span class="eyebrow">1 Diagnose</span><h3>Adaptive check</h3><p class="small muted">Ten questions. Each next question comes from the weakest topic, at a matching difficulty.</p></div>
+        <div class="stage"><span class="eyebrow">2 Estimate</span><h3>Mastery score</h3><p class="small muted">One score per topic, updated after every answer. The number of questions behind it is always shown.</p></div>
+        <div class="stage"><span class="eyebrow">3 Plan</span><h3>Draft routine</h3><p class="small muted">Rules turn the three biggest gaps into a three-step routine with a plain reason for each choice.</p></div>
+        <div class="stage human"><span class="eyebrow">4 Review</span><h3>Teacher decides</h3><p class="small muted">The teacher approves, adds a note, or leaves the draft. The learner sees which one happened.</p></div>
+        <div class="stage"><span class="eyebrow">5 Track</span><h3>Re-check</h3><p class="small muted">A short repeat check shows whether the gap closed. The class view groups learners for reteaching.</p></div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Where the AI sits</h3>
+      <p>The prototype uses a transparent rule for mastery, so every score can be recomputed by hand. In a full build, a language model would write the step-by-step hints and the plain-language reasons. Its output would be checked against the CAPS Grade 8 topic list and held for teacher review before reaching a learner.</p>
+      <div class="scroll"><table class="wide">
+        <thead><tr><th>Part</th><th>This prototype</th><th>Full build</th></tr></thead>
+        <tbody>
+          <tr><td>Question bank</td><td>15 hand-written items, 3 per topic</td><td>About 300 items tagged to CAPS topics and tested on a pilot class</td></tr>
+          <tr><td>Mastery model</td><td>Weighted update rule</td><td>Calibrated on pilot data, compared against teacher marks</td></tr>
+          <tr><td>Plan text</td><td>Templates per topic</td><td>Language model drafts, teacher approves</td></tr>
+          <tr><td>Data</td><td>Stays in this page. Nothing is sent anywhere.</td><td>Pseudonymous learner codes, stored by the school</td></tr>
+          <tr><td>Class data</td><td>Generated example learners</td><td>Real class, with guardian consent</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+    <div class="card">
+      <h3>Fitting into a school week</h3>
+      <div class="scroll"><table class="wide">
+        <thead><tr><th>When</th><th>What happens</th><th>Tool</th></tr></thead>
+        <tbody>
+          <tr><td>Monday, 10 minutes</td><td>Learners take the check on shared tablets or their own phones</td><td>LearnGap, light enough for low-data connections</td></tr>
+          <tr><td>Monday afternoon</td><td>Teacher opens the class view and picks reteach groups</td><td>Teacher tab</td></tr>
+          <tr><td>Tuesday to Thursday, 15 minutes</td><td>Learners follow the approved plan. The teacher runs one small group.</td><td>Plan, with printable worksheets</td></tr>
+          <tr><td>Friday, 10 minutes</td><td>Repeat check and compare with Monday</td><td>LearnGap</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+    <div class="card">
+      <h3>Use case map</h3>
+      <div class="scroll"><table class="wide">
+        <thead><tr><th>Classroom problem</th><th>AI component</th><th>Output</th><th>How to measure it</th></tr></thead>
+        <tbody>
+          <tr><td>One teacher, 40 or more learners, no quick way to see who is stuck on what</td><td>Adaptive check and mastery estimate</td><td>Topic heatmap</td><td>Minutes to find a reteach group, against marking a class test by hand</td></tr>
+          <tr><td>Learners practise what they already know</td><td>Gap-targeted planning</td><td>Three-item plan</td><td>Share of practice time spent on weak topics</td></tr>
+          <tr><td>Learners do not know why an answer was wrong</td><td>Common-slip tags on wrong options</td><td>Plain-language feedback</td><td>Accuracy when the learner retries that topic</td></tr>
+          <tr><td>Teachers cannot trust a score they cannot explain</td><td>Reason line and approval step</td><td>Approved plans</td><td>Share of plans a teacher edits or rejects</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </section>
+
+  <section class="panel" id="p-rai" role="tabpanel" aria-labelledby="t-rai" hidden>
+    <div class="grid">
+      <div class="card"><span class="eyebrow">Privacy</span><h3>No names, no accounts</h3><p class="small">Learners get a code such as L-0427. POPIA treats children's information as special, so school approval and a parent or guardian's consent come before any real use. Only scores and answers are kept, and the school holds the key that links a code to a child.</p></div>
+      <div class="card"><span class="eyebrow">Fairness</span><h3>Language is not ability</h3><p class="small">Items are in English. A learner who knows the maths can still miss a word problem because of the wording. Questions are kept short, and the full build adds translated versions checked by teachers. Error rates are compared across home language and school type before the tool is trusted.</p></div>
+      <div class="card"><span class="eyebrow">Transparency</span><h3>Every item says why</h3><p class="small">Each plan item shows the answers behind it and says when a score rests on only one or two questions. A learner can see the same reasons the teacher sees.</p></div>
+      <div class="card"><span class="eyebrow">Human oversight</span><h3>The teacher has the last word</h3><p class="small">Plans start as drafts. The teacher approves, adds a note, or ignores them. Nothing from this tool is used for marks, streaming or promotion decisions.</p></div>
+      <div class="card"><span class="eyebrow">Reliability</span><h3>Ten questions is a first look</h3><p class="small">A short check cannot measure a topic precisely. Scores are labelled as estimates, topics with a single question are flagged, and the Friday re-check gives a second reading before anyone acts.</p></div>
+      <div class="card"><span class="eyebrow">Safety</span><h3>No open chat with children</h3><p class="small">The full build writes hints from a fixed set of topics and does not let a learner type free messages to a model. Generated text is filtered and queued for teacher review.</p></div>
+    </div>
+    <div class="card">
+      <h3>Risk register</h3>
+      <div class="scroll"><table class="wide">
+        <thead><tr><th>Risk</th><th>Who it affects</th><th>Mitigation</th></tr></thead>
+        <tbody>
+          <tr><td>Learner is labelled "weak" from a noisy score</td><td>Learner</td><td>Estimate wording, question counts shown, repeat check, teacher review</td></tr>
+          <tr><td>Wording disadvantages second-language learners</td><td>Learners who do not speak English at home</td><td>Short items, translations, error-rate comparison by group</td></tr>
+          <tr><td>Scores used for grading or streaming</td><td>Learner</td><td>Stated as out of scope in school policy; plans are support only</td></tr>
+          <tr><td>Children's data stored or shared without consent</td><td>Learner and guardian</td><td>Codes instead of names, guardian consent, data kept by the school, deletion on request</td></tr>
+          <tr><td>Generated hint teaches a wrong method</td><td>Learner</td><td>Fixed topic list, checked against CAPS, teacher approval before release</td></tr>
+          <tr><td>Teachers stop looking and rubber-stamp plans</td><td>Learner</td><td>Track the share of plans edited; sample plans for review each term</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </section>
+
+  <footer>Individual project, End-to-End AI Solution. All learners in the teacher view are generated examples. Questions are written for this demo and follow the Grade 8 topic areas.</footer>
+</div>
+
+<script>
+(function () {
+  var TOPICS = [
+    { id: 'frac', name: 'Fractions', steps: [
+      'Watch a three-minute worked example on adding and dividing fractions with unlike denominators.',
+      'Do four guided problems and draw a fraction bar for each one.',
+      'Finish with three mixed word problems and estimate each answer before you work it out.'] },
+    { id: 'ratio', name: 'Ratio and rate', steps: [
+      'Read one worked example that splits an amount into parts and finds the value of one part.',
+      'Do four problems where you find the value of one unit first, then scale up.',
+      'Finish with three recipe or price problems and check that the ratio still holds.'] },
+    { id: 'alg', name: 'Algebraic expressions', steps: [
+      'Study one worked example of collecting like terms and expanding brackets with a negative sign.',
+      'Do five short problems and write every sign change on its own line.',
+      'Finish with three equations to solve, and substitute your answer back to check it.'] },
+    { id: 'int', name: 'Integers', steps: [
+      'Review the sign rules on a number line with two worked examples.',
+      'Do five problems mixing adding, multiplying and dividing negative numbers.',
+      'Finish with three problems that combine two operations in one line.'] },
+    { id: 'exp', name: 'Exponents', steps: [
+      'Study one worked example for each law: same base multiplying, and a power of a power.',
+      'Do five problems and write each power out in full before you simplify.',
+      'Finish with three problems that mix both laws.'] }
+  ];
+  var Q = [
+    { id: 'f1', t: 'frac', d: 0, q: '1/2 + 1/4 = ?', o: ['3/4', '2/6', '1/6', '2/4'], a: '3/4', why: 'Write 1/2 as 2/4, then 2/4 + 1/4 = 3/4.', traps: { '2/6': 'Adding the tops and the bottoms (1 + 1 over 2 + 4) is a common slip. Fractions need the same denominator first.' } },
+    { id: 'f2', t: 'frac', d: 1, q: 'What is 2/3 of 18?', o: ['12', '9', '6', '15'], a: '12', why: 'Divide 18 by 3 to get 6, then multiply by 2 to get 12.', traps: { '6': '6 is one third of 18. Two thirds needs one more step: multiply by 2.' } },
+    { id: 'f3', t: 'frac', d: 2, q: '3/4 ÷ 3/8 = ?', o: ['2', '1/2', '9/32', '1 1/8'], a: '2', why: 'Flip the second fraction and multiply: 3/4 × 8/3 = 24/12 = 2.', traps: { '9/32': 'Multiplying straight across skips the flip. Dividing by a fraction means multiplying by its reciprocal.', '1/2': 'You flipped the wrong fraction. The one you divide by is the one you flip.' } },
+    { id: 'r1', t: 'ratio', d: 0, q: 'Share R120 in the ratio 1 : 2. How much is the smaller share?', o: ['R40', 'R60', 'R30', 'R80'], a: 'R40', why: '1 + 2 = 3 parts. R120 ÷ 3 = R40 for each part, and the smaller share is one part.', traps: { 'R60': 'R60 splits the money into two equal halves. The ratio 1 : 2 makes three parts.', 'R80': 'R80 is the larger share. The question asks for the smaller one.' } },
+    { id: 'r2', t: 'ratio', d: 1, q: '5 loaves cost R65. What do 8 loaves cost?', o: ['R104', 'R90', 'R80', 'R112'], a: 'R104', why: 'One loaf costs R65 ÷ 5 = R13. Eight loaves cost 8 × R13 = R104.', traps: {} },
+    { id: 'r3', t: 'ratio', d: 2, q: 'A recipe uses flour and sugar in the ratio 5 : 2. With 750 g of flour, how much sugar is needed?', o: ['300 g', '150 g', '375 g', '1875 g'], a: '300 g', why: '750 ÷ 5 = 150 g for each part. Sugar is 2 parts, so 300 g.', traps: { '150 g': '150 g is one part. Sugar takes two parts.', '1875 g': 'You multiplied by 5/2 instead of 2/5, so the ratio went the wrong way round.' } },
+    { id: 'a1', t: 'alg', d: 0, q: 'Simplify 3x + 2x.', o: ['5x', '6x', '5x²', 'x'], a: '5x', why: 'Like terms add their coefficients: 3 + 2 = 5, and the x stays x.', traps: { '6x': '6x comes from multiplying 3 and 2. Collecting like terms adds the coefficients.', '5x²': 'The x is not squared when you add like terms.' } },
+    { id: 'a2', t: 'alg', d: 1, q: 'Solve 2x + 5 = 17.', o: ['x = 6', 'x = 11', 'x = 12', 'x = 5'], a: 'x = 6', why: 'Subtract 5 from both sides to get 2x = 12, then divide both sides by 2.', traps: { 'x = 12': '12 is the value of 2x. One more step: divide by 2.' } },
+    { id: 'a3', t: 'alg', d: 2, q: 'Simplify 3(x + 4) − 2(x − 1).', o: ['x + 14', 'x + 10', '5x + 14', 'x + 12'], a: 'x + 14', why: '3x + 12 − 2x + 2 = x + 14. Multiplying −2 by −1 gives +2.', traps: { 'x + 10': 'Expanding −2(x − 1) gives −2x + 2. The sign on the 2 flips.', '5x + 14': 'The minus sign belongs to the whole second bracket, so 2x is subtracted, not added.' } },
+    { id: 'i1', t: 'int', d: 0, q: '−3 + (−5) = ?', o: ['−8', '8', '−2', '2'], a: '−8', why: 'Both numbers are negative, so add them and keep the negative sign.', traps: { '−2': 'Taking 3 from 5 is for numbers with different signs. Here both are negative.', '8': 'Keep the negative sign when both numbers are negative.' } },
+    { id: 'i2', t: 'int', d: 1, q: '−4 × (−6) = ?', o: ['24', '−24', '−10', '10'], a: '24', why: 'A negative times a negative is positive: 4 × 6 = 24.', traps: { '−24': 'Two negative numbers multiplied give a positive answer.', '−10': '−10 is what you get from adding. The question multiplies.' } },
+    { id: 'i3', t: 'int', d: 2, q: '−12 ÷ (−3) + (−2) = ?', o: ['2', '6', '−6', '−2'], a: '2', why: '−12 ÷ −3 = 4, then 4 + (−2) = 2.', traps: { '6': '6 drops the minus on the last term and works out 4 + 2.', '−6': 'Two negatives divide to a positive, so the first part is +4, not −4.' } },
+    { id: 'e1', t: 'exp', d: 0, q: '2³ = ?', o: ['8', '6', '9', '5'], a: '8', why: '2³ means 2 × 2 × 2 = 8.', traps: { '6': '6 is 2 × 3. The power says how many 2s are multiplied together.' } },
+    { id: 'e2', t: 'exp', d: 1, q: '3² × 3³ = ?', o: ['3⁵', '3⁶', '9⁵', '6⁵'], a: '3⁵', why: 'Same base, so add the powers: 2 + 3 = 5, giving 3⁵.', traps: { '3⁶': 'The 6 comes from multiplying the powers. With the same base, you add them.', '9⁵': 'The base stays 3. Only the powers are added.', '6⁵': 'The base stays 3. It is not added to itself.' } },
+    { id: 'e3', t: 'exp', d: 2, q: '(2²)³ = ?', o: ['2⁶', '2⁵', '2⁸', '4⁵'], a: '2⁶', why: 'A power of a power multiplies the powers: 2 × 3 = 6, giving 2⁶.', traps: { '2⁵': 'The 5 comes from adding the powers. A power of a power multiplies them.', '2⁸': '2⁸ raises 2 to the power 2³. Here 2² is the thing being cubed.' } }
+  ];
+  var TOTAL = 10, MAX_PER_TOPIC = 3;
+  var GAIN = [0.22, 0.32, 0.42], LOSS = [0.45, 0.35, 0.25];
+
+  var S = null;           // learner session
+  var approved = {};      // learner code -> true
+  var notes = {};         // learner code -> teacher note
+  var selected = null;    // learner code shown in teacher detail
+
+  function level(m) { return m < 0.45 ? 'bad' : m < 0.7 ? 'mid' : 'ok'; }
+  function levelText(m) { return m < 0.45 ? 'Needs support' : m < 0.7 ? 'Developing' : 'Secure'; }
+  function pct(m) { return Math.round(m * 100); }
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function topicName(id) { return TOPICS.filter(function (t) { return t.id === id; })[0].name; }
+  function shuffle(a) { a = a.slice(); for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var x = a[i]; a[i] = a[j]; a[j] = x; } return a; }
+
+  function newSession() {
+    var s = { code: 'L-' + String(Math.floor(1000 + Math.random() * 9000)), m: {}, n: {}, ok: {}, traps: {}, asked: [], cur: null, answered: false, step: 0, done: false };
+    TOPICS.forEach(function (t) { s.m[t.id] = 0.5; s.n[t.id] = 0; s.ok[t.id] = 0; s.traps[t.id] = []; });
+    return s;
+  }
+
+  function pickNext(s) {
+    var fresh = TOPICS.filter(function (t) { return s.n[t.id] === 0; });
+    var topic;
+    if (fresh.length) topic = fresh[0].id;
+    else {
+      var open = TOPICS.filter(function (t) { return s.n[t.id] < MAX_PER_TOPIC; });
+      open.sort(function (a, b) { return s.m[a.id] - s.m[b.id]; });
+      topic = open[0].id;
+    }
+    var m = s.m[topic];
+    var want = m < 0.4 ? 0 : m < 0.65 ? 1 : 2;
+    var pool = Q.filter(function (q) { return q.t === topic && s.asked.indexOf(q.id) < 0; });
+    pool.sort(function (a, b) { return Math.abs(a.d - want) - Math.abs(b.d - want) || a.d - b.d; });
+    var q = pool[0];
+    return { q: q, opts: shuffle(q.o) };
+  }
+
+  function applyAnswer(s, q, choice) {
+    var right = choice === q.a;
+    var m = s.m[q.t];
+    s.m[q.t] = right ? m + (1 - m) * GAIN[q.d] : m - m * LOSS[q.d];
+    s.n[q.t] += 1;
+    if (right) s.ok[q.t] += 1;
+    else if (q.traps[choice]) s.traps[q.t].push(q.traps[choice]);
+    s.asked.push(q.id);
+    return right;
+  }
+
+  function buildPlan(m, n, ok, traps) {
+    var gaps = TOPICS.filter(function (t) { return m[t.id] < 0.7; });
+    gaps.sort(function (a, b) { return m[a.id] - m[b.id]; });
+    return gaps.slice(0, 3).map(function (t) {
+      var lv = m[t.id] < 0.45 ? 'bad' : 'mid';
+      var reason = 'You answered ' + ok[t.id] + ' of ' + n[t.id] + ' ' + t.name.toLowerCase() + ' question' + (n[t.id] === 1 ? '' : 's') + ' correctly.';
+      if (traps && traps[t.id] && traps[t.id].length) reason += ' ' + traps[t.id][0];
+      var caution = n[t.id] < 2 ? 'This score rests on one question, so treat it as a first guess.' : '';
+      return { id: t.id, name: t.name, lv: lv, minutes: lv === 'bad' ? 15 : 10, steps: t.steps, reason: reason, caution: caution };
+    });
+  }
+
+  /* Example class */
+  function rng(seed) { return function () { seed |= 0; seed = seed + 0x6D2B79F5 | 0; var t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+  var CLASS = (function () {
+    var r = rng(8421), base = { frac: 0.6, ratio: 0.56, alg: 0.46, int: 0.7, exp: 0.5 }, out = [];
+    for (var i = 1; i <= 12; i++) {
+      var ability = (r() - 0.5) * 0.4, m = {}, n = {}, ok = {};
+      TOPICS.forEach(function (t) {
+        var v = base[t.id] + ability + (r() - 0.5) * 0.3;
+        m[t.id] = Math.min(0.95, Math.max(0.1, v)); n[t.id] = 3; ok[t.id] = Math.round(m[t.id] * 3);
+      });
+      out.push({ code: 'L-' + (i < 10 ? '0' : '') + i, m: m, n: n, ok: ok, demo: false });
+    }
+    return out;
+  })();
+
+  function allLearners() {
+    var rows = CLASS.slice();
+    if (S && S.done) rows.unshift({ code: S.code, m: S.m, n: S.n, ok: S.ok, traps: S.traps, demo: true });
+    return rows;
+  }
+
+  /* Learner view */
+  function learnerView() {
+    var root = document.getElementById('learner-root');
+    if (!S) {
+      root.innerHTML =
+        '<div class="card"><span class="eyebrow">Learner check</span><h2>Find the maths you are missing</h2>' +
+        '<p>Ten questions across fractions, ratio, algebra, integers and exponents. Each answer decides what you see next. No name or email is asked for.</p>' +
+        '<div class="row"><button class="btn" data-act="start">Start the check</button><button class="btn ghost" data-act="sample">Skip to a sample result</button></div>' +
+        '<p class="muted small">The sample result answers as an example learner who gets fractions and integers right and misses the harder ratio, algebra and exponent questions.</p></div>';
+      return;
+    }
+    if (S.done) { resultView(root); return; }
+    var q = S.cur.q, shown = S.asked.length + (S.answered ? 0 : 1);
+    var h = '<div class="card"><div class="row" style="justify-content:space-between"><span class="eyebrow">Question ' + shown + ' of ' + TOTAL + '</span><span class="eyebrow">' + esc(topicName(q.t)) + '</span></div>' +
+      '<div class="progress" aria-hidden="true"><span style="width:' + (S.asked.length / TOTAL * 100) + '%"></span></div>' +
+      '<p class="qtext">' + esc(q.q) + '</p><div class="options">';
+    S.cur.opts.forEach(function (o, i) {
+      var cls = 'opt';
+      if (S.answered) { if (o === q.a) cls += ' right'; else if (o === S.choice) cls += ' wrong'; }
+      h += '<button class="' + cls + '" data-act="answer" data-i="' + i + '"' + (S.answered ? ' disabled' : '') + '><span class="letter">' + 'ABCD'[i] + '</span><span>' + esc(o) + '</span></button>';
+    });
+    h += '</div>';
+    if (S.answered) {
+      var right = S.choice === q.a, trap = q.traps[S.choice];
+      h += '<div class="feedback" aria-live="polite"><h3>' + (right ? 'Correct' : 'Not this one') + '</h3>' +
+        (!right && trap ? '<p>' + esc(trap) + '</p>' : '') + '<p>' + esc(q.why) + '</p></div>' +
+        '<div class="row"><button class="btn" data-act="next">' + (S.asked.length >= TOTAL ? 'See my plan' : 'Next question') + '</button></div>';
+    }
+    h += '</div>';
+    root.innerHTML = h;
+  }
+
+  function resultView(root) {
+    var plan = buildPlan(S.m, S.n, S.ok, S.traps), total = plan.reduce(function (a, p) { return a + p.minutes; }, 0);
+    var h = '<div class="card"><span class="eyebrow">Your result · code ' + esc(S.code) + '</span><h2>Where you are now</h2>' +
+      '<p class="muted small">These are estimates from ten questions. A topic with one question is a first guess.</p>';
+    TOPICS.forEach(function (t) {
+      var m = S.m[t.id], lv = level(m);
+      h += '<div class="mrow"><span>' + esc(t.name) + '</span><div class="track" role="img" aria-label="' + esc(t.name) + ' ' + pct(m) + ' percent"><span class="fill-' + lv + '" style="width:' + pct(m) + '%"></span></div>' +
+        '<span class="val">' + pct(m) + ' <span class="pill lv-' + lv + '">' + levelText(m) + '</span><span class="muted">' + S.n[t.id] + 'q</span></span></div>';
+    });
+    h += '</div><div class="card"><span class="eyebrow">Draft study plan</span><h2>' + (plan.length ? 'Your next ' + total + ' minutes' : 'No gaps found') + '</h2>';
+    var status = approved[S.code]
+      ? '<span class="pill lv-ok">Approved by your teacher</span>'
+      : '<span class="pill lv-mid">Draft, waiting for your teacher</span>';
+    h += '<div class="row">' + status + '</div>';
+    if (notes[S.code]) h += '<div class="note-box"><span class="eyebrow">Note from your teacher</span><p>' + esc(notes[S.code]) + '</p></div>';
+    if (!plan.length) h += '<p>Every topic is secure. A teacher can set a stretch task from the Teacher tab.</p>';
+    else {
+      h += '<ul class="plan">';
+      plan.forEach(function (p) {
+        h += '<li><div class="row"><h3>' + esc(p.name) + '</h3><span class="pill lv-' + p.lv + '">' + p.minutes + ' min</span></div>' +
+          '<ol>' + p.steps.map(function (s) { return '<li>' + esc(s) + '</li>'; }).join('') + '</ol>' +
+          '<p class="why"><b>Why this is here.</b> ' + esc(p.reason) + (p.caution ? ' ' + esc(p.caution) : '') + '</p></li>';
+      });
+      h += '</ul>';
+    }
+    h += '<div class="row"><button class="btn" data-act="go-teacher">Open this in the teacher view</button><button class="btn ghost" data-act="restart">Take the check again</button></div></div>';
+    root.innerHTML = h;
+  }
+
+  /* Teacher view */
+  function teacherView() {
+    var rows = allLearners();
+    var counts = TOPICS.map(function (t) {
+      return { t: t, c: rows.filter(function (r) { return r.m[t.id] < 0.45; }).length };
+    }).sort(function (a, b) { return b.c - a.c; });
+    var rt = '<h3>Topics to reteach</h3>';
+    counts.forEach(function (x) {
+      var flag = x.c / rows.length >= 0.4 ? ' <span class="pill lv-bad">Group lesson</span>' : '';
+      rt += '<div class="rbar"><span>' + esc(x.t.name) + '</span><div class="track"><span style="width:' + (x.c / rows.length * 100) + '%"></span></div><span class="mono small">' + x.c + ' of ' + rows.length + flag + '</span></div>';
+    });
+    document.getElementById('reteach').innerHTML = rt;
+
+    rows.sort(function (a, b) { if (a.demo !== b.demo) return a.demo ? -1 : 1; return avg(a) - avg(b); });
+    var h = '<thead><tr><th>Learner</th>' + TOPICS.map(function (t) { return '<th>' + esc(t.name) + '</th>'; }).join('') + '<th>Plan</th></tr></thead><tbody>';
+    rows.forEach(function (r) {
+      h += '<tr' + (selected === r.code ? ' class="sel"' : '') + '><th scope="row"><button class="who" data-act="pick" data-code="' + esc(r.code) + '">' + esc(r.code) + '</button>' + (r.demo ? ' <span class="pill lv-ok">you</span>' : '') + '</th>';
+      TOPICS.forEach(function (t) {
+        var m = r.m[t.id];
+        h += '<td class="cell"><span class="pill lv-' + level(m) + '" style="display:block;padding:5px 8px" title="' + levelText(m) + '">' + pct(m) + '</span></td>';
+      });
+      h += '<td class="stat">' + (approved[r.code] ? '<span class="pill lv-ok">Approved</span>' : '<span class="pill lv-mid">Draft</span>') + '</td></tr>';
+    });
+    document.getElementById('heat').innerHTML = h + '</tbody>';
+
+    var d = document.getElementById('detail'), r = rows.filter(function (x) { return x.code === selected; })[0];
+    if (!r) { d.innerHTML = '<h3>Plan review</h3><p class="muted">Select a learner code in the table to read the draft plan and approve it.</p>'; return; }
+    var plan = buildPlan(r.m, r.n, r.ok, r.traps), dh = '<span class="eyebrow">Plan review · ' + esc(r.code) + '</span><h2>' + (plan.length ? plan.map(function (p) { return esc(p.name); }).join(', ') : 'No gaps found') + '</h2>';
+    if (plan.length) {
+      dh += '<ul class="plan">' + plan.map(function (p) { return '<li><div class="row"><h3>' + esc(p.name) + '</h3><span class="pill lv-' + p.lv + '">' + p.minutes + ' min</span></div><p class="why"><b>Reason shown to the learner.</b> ' + esc(p.reason) + (p.caution ? ' ' + esc(p.caution) : '') + '</p></li>'; }).join('') + '</ul>';
+    }
+    dh += '<label for="note" class="eyebrow">Note to the learner (optional)</label><textarea id="note" placeholder="For example: start with the fraction bar example, then see me on Thursday.">' + esc(notes[r.code] || '') + '</textarea>' +
+      '<div class="row"><button class="btn" data-act="approve" data-code="' + esc(r.code) + '">' + (approved[r.code] ? 'Update approved plan' : 'Approve plan') + '</button>' +
+      (approved[r.code] ? '<button class="btn ghost" data-act="unapprove" data-code="' + esc(r.code) + '">Return to draft</button>' : '') + '</div>';
+    d.innerHTML = dh;
+  }
+  function avg(r) { return TOPICS.reduce(function (a, t) { return a + r.m[t.id]; }, 0) / TOPICS.length; }
+
+  /* Wiring */
+  function showTab(name) {
+    ['learner', 'teacher', 'arch', 'rai'].forEach(function (k) {
+      document.getElementById('p-' + k).hidden = k !== name;
+      document.getElementById('t-' + k).setAttribute('aria-selected', k === name ? 'true' : 'false');
+    });
+    if (name === 'teacher') teacherView();
+    if (name === 'learner') learnerView();
+  }
+  function startQuiz() { S = newSession(); S.cur = pickNext(S); learnerView(); }
+  function runSample() {
+    S = newSession();
+    var strong = { int: 1, frac: 1 };
+    while (S.asked.length < TOTAL) {
+      var nx = pickNext(S), q = nx.q, choice;
+      if (strong[q.t] || q.d === 0) choice = q.a;
+      else { var wrong = Object.keys(q.traps)[0] || q.o.filter(function (o) { return o !== q.a; })[0]; choice = wrong; }
+      applyAnswer(S, q, choice);
+    }
+    S.done = true; learnerView();
+  }
+
+  document.addEventListener('click', function (e) {
+    var tab = e.target.closest('[data-tab]');
+    if (tab) { showTab(tab.getAttribute('data-tab')); return; }
+    var el = e.target.closest('[data-act]');
+    if (!el) return;
+    var act = el.getAttribute('data-act');
+    if (act === 'start' || act === 'restart') startQuiz();
+    else if (act === 'sample') runSample();
+    else if (act === 'answer' && S && !S.answered) {
+      var choice = S.cur.opts[+el.getAttribute('data-i')];
+      S.choice = choice; applyAnswer(S, S.cur.q, choice); S.answered = true; learnerView();
+    } else if (act === 'next') {
+      if (S.asked.length >= TOTAL) { S.done = true; } else { S.cur = pickNext(S); S.answered = false; S.choice = null; }
+      learnerView();
+    } else if (act === 'go-teacher') { selected = S.code; showTab('teacher'); }
+    else if (act === 'pick') { selected = el.getAttribute('data-code'); teacherView(); }
+    else if (act === 'approve') {
+      var code = el.getAttribute('data-code'), box = document.getElementById('note');
+      approved[code] = true; notes[code] = box ? box.value.trim() : ''; teacherView();
+    } else if (act === 'unapprove') { delete approved[el.getAttribute('data-code')]; teacherView(); }
+  });
+
+  learnerView();
+  teacherView();
+})();
+</script>
+
+</body>
+</html>
